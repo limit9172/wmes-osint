@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WMES·OSINT</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- navbar -->
+        <nav class="navbar">
+            <div class="nav-brand">wmes<span class="accent">.</span>osint</div>
+            <button class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="nav-menu" id="nav-menu">
+                <a href="#" class="nav-item active" data-page="home">#home</a>
+                <a href="#" class="nav-item" data-page="tools">#tools</a>
+                <a href="#" class="nav-item" data-page="about">#about</a>
+            </div>
+        </nav>
+
+        <!-- pages -->
+        <main class="main">
+            <!-- home -->
+            <section id="page-home" class="page active">
+                <div class="hero">
+                    <h1>wmes<span class="accent">.</span>osint</h1>
+                    <p class="sub">information gathering toolkit</p>
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <div class="info-icon"></div>
+                            <span>nik lookup</span>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon"></div>
+                            <span>wallet check</span>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon"></div>
+                            <span>ip geolocate</span>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon"></div>
+                            <span>name search</span>
+                        </div>
+                    </div>
+                    <div class="cmd-hint">
+                        <span class="prompt">$></span>
+                        <span class="cmd">/check &lt;nik|wallet|ip|nama&gt; [value]</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- tools -->
+            <section id="page-tools" class="page">
+                <div class="tools-container">
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-icon"></div>
+                            <h3>nik lookup</h3>
+                            <span class="badge">kpu</span>
+                        </div>
+                        <div class="tool-body">
+                            <input type="text" id="nik-input" class="input" placeholder="16 digit NIK">
+                            <button class="btn" data-cmd="nik">/check nik</button>
+                        </div>
+                    </div>
+
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-icon"></div>
+                            <h3>wallet check</h3>
+                            <span class="badge">pitucode</span>
+                        </div>
+                        <div class="tool-body">
+                            <select id="wallet-bank" class="input">
+                                <option value="gopay">gopay</option>
+                                <option value="dana">dana</option>
+                                <option value="ovo">ovo</option>
+                                <option value="shopeepay">shopeepay</option>
+                                <option value="astrapay">astrapay</option>
+                                <option value="isaku">isaku</option>
+                            </select>
+                            <input type="text" id="wallet-number" class="input" placeholder="nomor hp">
+                            <button class="btn" data-cmd="wallet">/check wallet</button>
+                        </div>
+                    </div>
+
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-icon"></div>
+                            <h3>ip geolocate</h3>
+                            <span class="badge">ip-api</span>
+                        </div>
+                        <div class="tool-body">
+                            <input type="text" id="ip-input" class="input" placeholder="IPv4 address">
+                            <button class="btn" data-cmd="ip">/check ip</button>
+                        </div>
+                    </div>
+
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-icon"></div>
+                            <h3>name search</h3>
+                            <span class="badge">lookup</span>
+                        </div>
+                        <div class="tool-body">
+                            <input type="text" id="nama-input" class="input" placeholder="nama lengkap">
+                            <button class="btn" data-cmd="nama">/check nama</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="output-area">
+                    <div class="output-header">
+                        <span class="output-label">output</span>
+                        <button class="copy-btn" id="copy-btn" style="display: none;">copy</button>
+                    </div>
+                    <div id="output-content" class="output-content">
+                        <div class="output-placeholder">[ ready ]</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="page-about" class="page">
+                <div class="about-panel">
+                    <h3>wmes osint</h3>
+                    <p>information gathering toolkit for security research</p>
+                    <ul>
+                        <li>nik → kpu database</li>
+                        <li>wallet → gopay, dana, ovo, shopeepay, astrapay, isaku</li>
+                        <li>ip → geolocation & isp info</li>
+                        <li>nama → public data lookup</li>
+                    </ul>
+                    <div class="about-footer">
+                        <span>developer: @zenithx_9</span>
+                        <span>channel: @wmeschannel</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <span>WMES OSINT · educational purpose only</span>
+        </footer>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

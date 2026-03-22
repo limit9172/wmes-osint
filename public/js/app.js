@@ -1,77 +1,199 @@
-const express = require('express');
-const axios = require('axios');
-const path = require('path');
+let currentResult = null;
 
-const app = express();
-const PORT = 3000;
+const pages = {
+    home: document.getElementById('page-home'),
+    tools: document.getElementById('page-tools'),
+    about: document.getElementById('page-about')
+};
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+const navItems = document.querySelectorAll('.nav-item');
+const hamburger = document.getElementById('hamburger');
+const navMenu = document.getElementById('nav-menu');
 
-// KPU token
-const KPU_TOKEN = "5iFp0UX0cAFcWəACaY7z3aPPVp0ɴKJSsNEOkPLxɢ4bt2n4Yy0Kʌ0TrʍsUluM6JSQnmHkzNe0aUyXYeS308HUm-0Xz64hzpyK-VoJ-74d_O38dQLvOEVxftxVZydHfKyObrbtxiyJiE-33NHOSbKHXyCTPbFbUmX8zD64oQ4UwcQCI8bkL7fvxbvRNrjBUxYzQGBroV0amOscizkpt5kibsFX5ZCYjZJzzf_J66KZ3M2k7G7tD7NPe5YAsntkj0gHCzM9A1yr4_enBfdeXtyqf3XpITLN-R16znPlyTFwL2dEKCCcGpCy2qUiFcN3JMq19yRrPS7_EL05136ojJ0seW0sBQC-Xt5m7WucNKIfwkYUB7GPXArGYyiGBdz0p97dm9YEuffCHZDnGAyZ7u2x2-qIHZvOWlL6H4W65lcawOtOiath72UTQTFRUuDAr5fx3CAHyUd3d4gW3I6-eXlgYl0cVQw-I_h9G1HLtSM6MIWXIOM2fgdsYa1litf434lH_2Jf6XghjzU6X0eUwaufvV26Z8CBN1qm0BJhG_zwvjqWr3U9oHAPxGqqU-g8ARgsDxmIBb1xI83B7jJjua5FRPEGGqvFWyLVeLnFhuG5q9pyiJhQm-g9m8Nw6UHud4OS-QNPexKHMec2DXttOdR8hHEe8oUBQgqv6B3nrkxof_X5sVXQKQqTRfBdoOX0yHX5NIV-oXzXUPZPDiyKpZaGYYVbhHSsWFMdP7aqbFAa9ijThc7c-LJERh4GMuyDWn9-N0aPme_X8eiLRtxnpqROtqn09uzDW9FI9mgI6-WT2i8yY8eFysxOXjn5W7RrzxAlE8qdYxDZrpAO5z9g6XLZAVFnrHHF5G51Rnd4ZFU8QY-m9iDAibKNX29yC9oRpY5bcKrkE8kJoyLVQaJFR50AF0vztIAq1Zb-8djCkblV8cK1i0N2el0ghXfcZT0mnSAzlYD_-MBk-mfatUf6HEVwv93MkhJ2pAT8AyecmaC739cDWn8Z934OBHIBBTVkgoSJpzhw9R_Z39To9fjZOCR1WjwRuEORHjbeyrZAovMbbWQX1PySh0-WZmo1d-PYLtGVknvP5pJkmYYnHuOlK";
+if (hamburger) {
+    hamburger.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+    });
+}
 
-app.post('/api/nik', async (req, res) => {
-    const { nik } = req.body;
-    if (!nik || !/^\d{16}$/.test(nik)) return res.status(400).json({ error: 'invalid nik' });
-    
-    const query = `{ findNikSidalih(nik: "${nik}", wilayah_id: 0, token: "${KPU_TOKEN}") { nama kabupaten kelurahan kecamatan provinsi ttl jenis_kelamin status_perkawinan pekerjaan alamat lhp { nama kelurahan kecamatan kabupaten provinsi } } }`;
-    
+navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const pageId = item.getAttribute('data-page');
+        navItems.forEach(nav => nav.classList.remove('active'));
+        item.classList.add('active');
+        Object.keys(pages).forEach(key => pages[key].classList.remove('active'));
+        pages[pageId].classList.add('active');
+        if (navMenu) navMenu.classList.remove('active');
+    });
+});
+
+function showOutput(html) {
+    const output = document.getElementById('output-content');
+    if (output) output.innerHTML = html;
+    const copyBtn = document.getElementById('copy-btn');
+    if (copyBtn) copyBtn.style.display = 'block';
+}
+
+function showError(msg) {
+    const output = document.getElementById('output-content');
+    if (output) output.innerHTML = `<div style="color: #ff6666">error: ${msg}</div>`;
+    const copyBtn = document.getElementById('copy-btn');
+    if (copyBtn) copyBtn.style.display = 'none';
+}
+
+function showLoading() {
+    const output = document.getElementById('output-content');
+    if (output) output.innerHTML = `<div style="color: #888">loading...</div>`;
+    const copyBtn = document.getElementById('copy-btn');
+    if (copyBtn) copyBtn.style.display = 'none';
+}
+
+function formatNIK(data) {
+    if (!data || !data.nama) return '<div style="color:#ff6666">data tidak ditemukan</div>';
+    return `
+        <div style="border-left: 2px solid #ff4d4d; padding-left: 12px;">
+            <div><span style="color:#888">nik</span> : ${data.nik || '-'}</div>
+            <div><span style="color:#888">nama</span> : ${data.nama}</div>
+            <div><span style="color:#888">ttl</span> : ${data.ttl || '-'}</div>
+            <div><span style="color:#888">jk</span> : ${data.jenis_kelamin || '-'}</div>
+            <div><span style="color:#888">status</span> : ${data.status_perkawinan || '-'}</div>
+            <div><span style="color:#888">pekerjaan</span> : ${data.pekerjaan || '-'}</div>
+            <div><span style="color:#888">alamat</span> : ${data.alamat || '-'}</div>
+            <div><span style="color:#888">kelurahan</span> : ${data.kelurahan || '-'}</div>
+            <div><span style="color:#888">kecamatan</span> : ${data.kecamatan || '-'}</div>
+            <div><span style="color:#888">kab/kota</span> : ${data.kabupaten || '-'}</div>
+            <div><span style="color:#888">provinsi</span> : ${data.provinsi || '-'}</div>
+        </div>
+    `;
+}
+
+function formatWallet(data) {
+    if (!data) return '<div style="color:#ff6666">tidak ditemukan</div>';
+    return `<pre style="margin:0; color:#aaa; font-size:0.75rem">${JSON.stringify(data, null, 2)}</pre>`;
+}
+
+function formatIP(data) {
+    if (!data || data.status === 'fail') return '<div style="color:#ff6666">ip tidak valid</div>';
+    return `
+        <div style="border-left: 2px solid #ff4d4d; padding-left: 12px;">
+            <div><span style="color:#888">ip</span> : ${data.query}</div>
+            <div><span style="color:#888">negara</span> : ${data.country} (${data.countryCode})</div>
+            <div><span style="color:#888">kota</span> : ${data.city}, ${data.regionName}</div>
+            <div><span style="color:#888">isp</span> : ${data.isp}</div>
+            <div><span style="color:#888">lokasi</span> : ${data.lat}, ${data.lon}</div>
+        </div>
+    `;
+}
+
+function formatNama(data) {
+    if (!data) return '<div style="color:#ff6666">tidak ditemukan</div>';
+    return `<pre style="margin:0; color:#aaa; font-size:0.75rem">${JSON.stringify(data, null, 2)}</pre>`;
+}
+
+async function cekNik() {
+    const nik = document.getElementById('nik-input')?.value.trim();
+    if (!nik || nik.length !== 16 || isNaN(nik)) {
+        showError('NIK harus 16 digit angka');
+        return;
+    }
+    showLoading();
     try {
-        const response = await axios.post('https://cekdptonline.kpu.go.id/v2', { query }, {
+        const res = await fetch('/api/nik', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            timeout: 15000
+            body: JSON.stringify({ nik })
         });
-        const data = response.data?.data?.findNikSidalih;
-        if (!data || !data.nama) return res.status(404).json({ error: 'not found' });
-        data.nik = nik;
-        res.json(data);
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'gagal');
+        }
+        const data = await res.json();
+        showOutput(formatNIK(data));
+        currentResult = data;
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        showError(err.message);
     }
-});
+}
 
-app.post('/api/wallet', async (req, res) => {
-    const { bank, number } = req.body;
-    const valid = ['gopay','dana','ovo','shopeepay','astrapay','isaku'];
-    if (!valid.includes(bank) || !number) return res.status(400).json({ error: 'invalid' });
-    
+async function cekWallet() {
+    const bank = document.getElementById('wallet-bank')?.value;
+    const number = document.getElementById('wallet-number')?.value.trim();
+    if (!number) {
+        showError('masukkan nomor hp');
+        return;
+    }
+    showLoading();
     try {
-        const response = await axios.get('https://api.pitucode.com/cek-name-e-wallet-id', {
-            params: { bank, accountNumber: number },
-            headers: { 'x-api-key': '7C0dE87fd76' }
+        const res = await fetch('/api/wallet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bank, number })
         });
-        res.json(response.data);
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'gagal');
+        }
+        const data = await res.json();
+        showOutput(formatWallet(data));
+        currentResult = data;
     } catch (err) {
-        res.status(err.response?.status || 500).json({ error: err.message });
+        showError(err.message);
     }
-});
+}
 
-app.get('/api/ip', async (req, res) => {
-    const { ip } = req.query;
-    if (!ip) return res.status(400).json({ error: 'ip required' });
+async function cekIp() {
+    const ip = document.getElementById('ip-input')?.value.trim();
+    if (!ip) {
+        showError('masukkan ip address');
+        return;
+    }
+    showLoading();
     try {
-        const response = await axios.get(`http://ip-api.com/json/${ip}`);
-        res.json(response.data);
+        const res = await fetch(`/api/ip?ip=${encodeURIComponent(ip)}`);
+        if (!res.ok) throw new Error('gagal');
+        const data = await res.json();
+        showOutput(formatIP(data));
+        currentResult = data;
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        showError(err.message);
     }
-});
+}
 
-app.get('/api/nama', async (req, res) => {
-    const { nama } = req.query;
-    if (!nama || nama.length < 3) return res.status(400).json({ error: 'nama too short' });
+async function cekNama() {
+    const nama = document.getElementById('nama-input')?.value.trim();
+    if (!nama || nama.length < 3) {
+        showError('nama minimal 3 karakter');
+        return;
+    }
+    showLoading();
     try {
-        const response = await axios.get('https://anggota-negara-six.vercel.app/api/lookup', { params: { nama } });
-        if (!response.data || Object.keys(response.data).length === 0) return res.status(404).json({ error: 'not found' });
-        res.json(response.data);
+        const res = await fetch(`/api/nama?nama=${encodeURIComponent(nama)}`);
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'gagal');
+        }
+        const data = await res.json();
+        showOutput(formatNama(data));
+        currentResult = data;
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        showError(err.message);
+    }
+}
+
+document.getElementById('nik-btn')?.addEventListener('click', cekNik);
+document.getElementById('wallet-btn')?.addEventListener('click', cekWallet);
+document.getElementById('ip-btn')?.addEventListener('click', cekIp);
+document.getElementById('nama-btn')?.addEventListener('click', cekNama);
+
+document.getElementById('copy-btn')?.addEventListener('click', () => {
+    if (currentResult) {
+        navigator.clipboard.writeText(JSON.stringify(currentResult, null, 2));
+        alert('copied');
     }
 });
 
-// 404 & error
-app.use((req, res) => res.status(404).sendFile(path.join(__dirname, 'views', '404.html')));
-app.use((err, req, res, next) => res.status(500).sendFile(path.join(__dirname, 'views', '500.html')));
-
-app.listen(PORT, () => console.log(`🔥 running on http://localhost:${PORT}`));
+document.getElementById('nik-input')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') cekNik(); });
+document.getElementById('wallet-number')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') cekWallet(); });
+document.getElementById('ip-input')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') cekIp(); });
+document.getElementById('nama-input')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') cekNama(); });
